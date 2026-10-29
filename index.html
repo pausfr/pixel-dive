@@ -33,16 +33,32 @@ function menuUI(){
 }
 const TR=[1.4,2.4,3.4],JX=[178,202,226];
 let jT=0,jn=0,fw=[],rk=[],fwT=0,fwN=0;
+const JH=18,JF=[1,2,3].map(n=>{const i=new Image();i.src='img/judge'+n+'.png';return i});
+const SUITS=[{j:'#2d3a5e',k:'#1e2742',h:'#5a6ea0',t:'#d63a2f'},{j:'#45454b',k:'#2c2c31',h:'#7a7a84',t:'#e3b32e'},{j:'#5b3a2a',k:'#3f2619',h:'#8f6a52',t:'#3a73d6'}].map(o=>{
+ const C={J:o.j,K:o.k,H:o.h,T:o.t,W:'#fff',S:'#f2b07a',D:'#c47a4c',O:'#1b1b1b'},w=23,h=12,cx=11,m=[...Array(h)].map(()=>Array(w).fill(null));
+ const set=(x,y,k)=>{m[y+1][cx+x]=k;m[y+1][cx-x]=k},row=(y,x0,x1,k)=>{for(let x=x0;x<=x1;x++)set(x,y,k)};
+ [5,8,9,9,9,9,9,9,9,9].forEach((v,y)=>row(y,0,v,'J'));
+ for(let y=2;y<=9;y++)set(6,y,'K');row(5,2,5,'K');
+ [2,2,2,1,1,0].forEach((v,y)=>row(y,0,v,'W'));[3,3,3,2,2,1].forEach((v,y)=>set(v,y,'H'));
+ for(let y=1;y<=8;y++)set(0,y,'T');row(1,0,1,'T');
+ row(7,7,9,'W');row(8,7,9,'S');row(9,7,9,'S');set(9,9,'D');set(9,8,'D');
+ const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){let k=m[y][x];if(!k&&[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>m[y+dy]&&m[y+dy][x+dx]))k='O';if(k){g.fillStyle=C[k];g.fillRect(x,y,1,1)}}
+ return c;
+});
 function judges(){
  px(166,102,72,4);px(168,106,3,WY-106);px(233,106,3,WY-106);
  JX.forEach((x,i)=>{
-  px(x-1,93,3,3);px(x-2,96,5,6);
-  if(mode==='judge'&&jT>TR[i]){
-   const u=Math.min(1,(jT-TR[i])/.25),bt=Math.round(96-u*14),v=res.js[i];
+  if(mode!=='judge'){px(x-1,93,3,3);px(x-2,96,5,6);return}
+  if(jT>TR[i]){
+   const u=Math.min(1,(jT-TR[i])/.25),bt=Math.round(84-u*24),v=res.js[i];
    ctx.fillStyle='#fff';px(x-6,bt,13,9);ctx.fillStyle='#000';box(x-6,bt,13,9);
    txt(v>=100?'10':(v/10).toFixed(1),x-5,bt+2);
-   if(bt+9<93)px(x,bt+9,1,93-bt-9);
+   if(bt+9<94-JH)px(x,bt+9,1,94-JH-bt-9);
   }
+  ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(SUITS[i],x-11,91);ctx.restore();
+  const im=JF[i];if(im.complete&&im.naturalWidth){const w=Math.round(JH*im.naturalWidth/im.naturalHeight);
+   ctx.save();ctx.imageSmoothingQuality='high';ctx.drawImage(im,Math.round(x-w/2),94-JH,w,JH);ctx.restore()}
  });
 }
 function px(x,y,w=1,h=1){ctx.fillRect(Math.round(x),Math.round(y),w,h)}
@@ -60,7 +76,7 @@ function entry(){const tier=rt.reduce((a,b)=>a+b,0),n=6+(6-tier)*4,sp=20+(6-tier
  for(let i=0;i<n;i++)parts.push({x:gm.x,y:WY,vx:(Math.random()-.5)*sp,vy:-(20+Math.random()*(30+(6-tier)*10))});
  mode='splash';splT=0}
 function finish(){const tier=rt.reduce((a,b)=>a+b,0),raw=tier/6*7+gm.power/100*3,cap=CAPS[d-1];
- res={score:Math.round(Math.min(raw,cap)*10)/10,cap,power:gm.power,rt:rt.slice()};
+ res={score:Math.round(Math.min(raw,tier===6?cap:cap-.1)*10)/10,cap,power:gm.power,rt:rt.slice()};
  const s=Math.round(res.score*10),lim=Math.min(100,Math.round(cap*10));let o=[0,0,0];
  if(s>=6&&lim-s>=6){const a=Math.floor(Math.random()*7)-3,b=Math.floor(Math.random()*7)-3;o=[a,b,-(a+b)]}
  res.js=o.map(v=>s+v);jT=0;jn=0;mode='judge'}
@@ -158,7 +174,7 @@ function diver(cx,cy,a,p,gnd){
 }
 function bar(){box(BX,GY,BW,BH)}
 function scene(){
- if(mode==='judge'){const e=Math.min(1,jT/.9),z=1+2*(e*e*(3-2*e));ctx.save();ctx.translate(Math.round(120-202*z),Math.round(80-92*z));ctx.scale(z,z)}
+ if(mode==='judge'){const e=Math.min(1,jT/.9),z=1+2*(e*e*(3-2*e));ctx.save();ctx.translate(Math.round(120-202*z),Math.round(80-81*z));ctx.scale(z,z)}
  judges();px(0,BY,30,2);px(0,BY,4,WY-BY);
  for(let x=0;x<W;x+=2)if(((x>>1)+((now*6)|0))%3)px(x,WY+Math.round(Math.sin(x/6+now*3)),2,1);
  for(let y=WY+8;y<H;y+=6)for(let x=((y/6)&1)*3;x<W;x+=6)px(x,y,2,1);
