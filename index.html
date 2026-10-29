@@ -32,33 +32,47 @@ function menuUI(){
  txt('TAP STARS OR ARROWS',120,140,1,true);
 }
 const TR=[1.4,2.4,3.4],JX=[178,202,226];
-let jT=0,jn=0,fw=[],rk=[],fwT=0,fwN=0;
+let jT=0,jn=0,fw=[],rk=[],fwT=0,fwN=0,cf=[],cbN=0;
+const OS=TR[2]+.5,CC=['#e53030','#f2b02e','#3a73d6','#2fb85a','#d63ab8','#2fc4d6'];
+function burst(){for(const sd of[-1,1])for(let i=0;i<40;i++){const a=(48+Math.random()*24)*Math.PI/180,v=70+Math.random()*70;
+ cf.push({x:sd<0?12:W-12,y:H-28,vx:sd*Math.cos(a)*v*(.6+Math.random()*.6),vy:-Math.sin(a)*v,c:CC[(Math.random()*CC.length)|0],ph:Math.random()*6.28})}}
+function cannon(sd){const f=sd<0?x=>x:x=>W-x;ctx.fillStyle='#000';
+ for(let i=0;i<10;i++){const x=2+i;px(sd<0?x:W-x-3,H-18-i,3,3)}
+ px(sd<0?0:W-12,H-14,12,3);px(sd<0?0:W-9,H-11,9,11);
+ if(jT>OS&&jT<OS+2.8&&(jT-OS)%.7<.1){ctx.fillStyle='#f2b02e';px(f(11),H-29,4,4)}ctx.fillStyle='#000'}
 const JH=18,JF=[1,2,3].map(n=>{const i=new Image();i.src='img/judge'+n+'.png';return i});
-const SUITS=[{j:'#2d3a5e',k:'#1e2742',h:'#5a6ea0',t:'#d63a2f'},{j:'#45454b',k:'#2c2c31',h:'#7a7a84',t:'#e3b32e'},{j:'#5b3a2a',k:'#3f2619',h:'#8f6a52',t:'#3a73d6'}].map(o=>{
+const SD=[{j:'#2d3a5e',k:'#1e2742',h:'#5a6ea0',t:'#d63a2f'},{j:'#45454b',k:'#2c2c31',h:'#7a7a84',t:'#e3b32e'},{j:'#5b3a2a',k:'#3f2619',h:'#8f6a52',t:'#3a73d6'}];
+const mkSuit=(o,arms)=>{
  const C={J:o.j,K:o.k,H:o.h,T:o.t,W:'#fff',S:'#f2b07a',D:'#c47a4c',O:'#1b1b1b'},w=23,h=12,cx=11,m=[...Array(h)].map(()=>Array(w).fill(null));
  const set=(x,y,k)=>{m[y+1][cx+x]=k;m[y+1][cx-x]=k},row=(y,x0,x1,k)=>{for(let x=x0;x<=x1;x++)set(x,y,k)};
- [5,8,9,9,9,9,9,9,9,9].forEach((v,y)=>row(y,0,v,'J'));
- for(let y=2;y<=9;y++)set(6,y,'K');row(5,2,5,'K');
+ [5,8,9,9,9,9,9,9,9,9].forEach((v,y)=>row(y,0,arms?v:Math.min(v,5),'J'));
+ if(arms)for(let y=2;y<=9;y++)set(6,y,'K');row(5,2,5,'K');
  [2,2,2,1,1,0].forEach((v,y)=>row(y,0,v,'W'));[3,3,3,2,2,1].forEach((v,y)=>set(v,y,'H'));
  for(let y=1;y<=8;y++)set(0,y,'T');row(1,0,1,'T');
- row(7,7,9,'W');row(8,7,9,'S');row(9,7,9,'S');set(9,9,'D');set(9,8,'D');
+ if(arms){row(7,7,9,'W');row(8,7,9,'S');row(9,7,9,'S');set(9,9,'D');set(9,8,'D')}
  const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');
  for(let y=0;y<h;y++)for(let x=0;x<w;x++){let k=m[y][x];if(!k&&[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>m[y+dy]&&m[y+dy][x+dx]))k='O';if(k){g.fillStyle=C[k];g.fillRect(x,y,1,1)}}
  return c;
-});
+};
+const SUITS=SD.map(o=>mkSuit(o,1)),SUITN=SD.map(o=>mkSuit(o,0));
 function judges(){
  px(166,102,72,4);px(168,106,3,WY-106);px(233,106,3,WY-106);
  JX.forEach((x,i)=>{
   if(mode!=='judge'){px(x-1,93,3,3);px(x-2,96,5,6);return}
+  const ov=res.react==='ovation'&&jT>OS,cl=res.react!=='still'&&jT>TR[i]+.4;
+  let lift=0;if(ov){lift=-Math.round(Math.min(1,(jT-OS)/.25)*6);if(jT>OS+.25)lift-=Math.round(Math.abs(Math.sin(now*9+i))*2)}
   if(jT>TR[i]){
    const u=Math.min(1,(jT-TR[i])/.25),bt=Math.round(84-u*24),v=res.js[i];
    ctx.fillStyle='#fff';px(x-6,bt,13,9);ctx.fillStyle='#000';box(x-6,bt,13,9);
    txt(v>=100?'10':(v/10).toFixed(1),x-5,bt+2);
    if(bt+9<94-JH)px(x,bt+9,1,94-JH-bt-9);
   }
-  ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(SUITS[i],x-11,91);ctx.restore();
+  if(lift<0){ctx.fillStyle=SD[i].j;px(cl?x-5:x-9,103+lift,cl?11:19,-lift-1);ctx.fillStyle='#000'}
+  ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage((cl?SUITN:SUITS)[i],x-11,91+lift);ctx.restore();
   const im=JF[i];if(im.complete&&im.naturalWidth){const w=Math.round(JH*im.naturalWidth/im.naturalHeight);
-   ctx.save();ctx.imageSmoothingQuality='high';ctx.drawImage(im,Math.round(x-w/2),94-JH,w,JH);ctx.restore()}
+   ctx.save();ctx.imageSmoothingQuality='high';ctx.drawImage(im,Math.round(x-w/2),94-JH+lift,w,JH);ctx.restore()}
+  if(cl){const o=((now*(ov?10:6))|0)&1?4:1,hy=(ov?95:98)+lift;
+   for(const sd of[-1,1]){const hx=x+sd*o-2;ctx.fillStyle='#000';px(hx-1,hy-1,5,5);ctx.fillStyle='#f2b07a';px(hx,hy,3,3)}ctx.fillStyle='#000'}
  });
 }
 function px(x,y,w=1,h=1){ctx.fillRect(Math.round(x),Math.round(y),w,h)}
@@ -79,7 +93,7 @@ function finish(){const tier=rt.reduce((a,b)=>a+b,0),raw=tier/6*7+gm.power/100*3
  res={score:Math.round(Math.min(raw,tier===6?cap:cap-.1)*10)/10,cap,power:gm.power,rt:rt.slice()};
  const s=Math.round(res.score*10),lim=Math.min(100,Math.round(cap*10));let o=[0,0,0];
  if(s>=6&&lim-s>=6){const a=Math.floor(Math.random()*7)-3,b=Math.floor(Math.random()*7)-3;o=[a,b,-(a+b)]}
- res.js=o.map(v=>s+v);jT=0;jn=0;mode='judge'}
+ res.js=o.map(v=>s+v);res.react=tier===6?'ovation':tier===0?'still':'clap';cf=[];cbN=0;jT=0;jn=0;mode='judge'}
 
 function act(lx,ly){
  if(mode==='menu'){
@@ -89,7 +103,7 @@ function act(lx,ly){
  }else if(mode==='ready')mode='power';
  else if(mode==='power')doJump();
  else if(mode==='timing'){if(tm.t>.12)judge()}
- else if(mode==='result'){mode='menu';fw=[];rk=[]}
+ else if(mode==='result'){mode='menu';fw=[];rk=[];cf=[]}
 }
 cv.addEventListener('pointerdown',e=>{e.preventDefault();const r=cv.getBoundingClientRect();act((e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H)});
 addEventListener('keydown',e=>{
@@ -100,10 +114,12 @@ addEventListener('keydown',e=>{
 function step(dt){
  for(const q of pops)q.t-=dt;pops=pops.filter(q=>q.t>0);
  for(const q of parts){q.vy+=150*dt;q.x+=q.vx*dt;q.y+=q.vy*dt}parts=parts.filter(q=>q.y<=WY+1);
- if(mode==='judge'){jT+=dt;while(jn<3&&jT>TR[jn])jn++;if(jT>5){mode='result';fwT=0;fwN=3+Math.round(res.score)}}
+ if(mode==='judge'){jT+=dt;while(jn<3&&jT>TR[jn])jn++;if(res.react==='ovation')while(cbN<4&&jT>OS+cbN*.7){cbN++;burst()}
+  if(jT>(res.react==='ovation'?7:5)){mode='result';fwT=0;fwN=3+Math.round(res.score)}}
  if(mode==='result'){fwT-=dt;if(fwN>0&&fwT<=0){fwN--;fwT=.3+Math.random()*.3;rk.push({x:30+Math.random()*180,y:H,ty:25+Math.random()*50})}
   for(const r of rk){r.y-=110*dt;if(r.y<=r.ty){r.dead=1;for(let i=0;i<22;i++){const a=i/22*6.283,s=28+Math.random()*22;fw.push({x:r.x,y:r.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,t:1.1})}}}
   rk=rk.filter(r=>!r.dead)}
+ for(const q of cf){q.vx*=1-1.2*dt;q.vy=q.vy<30?q.vy+90*dt:30;q.x+=q.vx*dt+Math.sin(q.ph)*8*dt;q.y+=q.vy*dt;q.ph+=dt*9}cf=cf.filter(q=>q.y<H);
  for(const q of fw){q.vy+=50*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.t-=dt}fw=fw.filter(q=>q.t>0);
  if(mode==='power'){pv+=pdir*P().ps*dt;if(pv>=100){pv=100;pdir=-1}if(pv<=1){pv=1;pdir=1}}
  else if(mode==='jump'){
@@ -217,6 +233,8 @@ function draw(){
   if(pops.length)txt(pops[pops.length-1].s,120,30,2,true);
  }
 }
-function loop(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;now=t/1000;step(dt);draw();requestAnimationFrame(loop)}
+function overlay(){if(mode==='judge'&&res.react==='ovation'&&jT>OS-.5){cannon(-1);cannon(1)}
+ for(const q of cf){ctx.fillStyle=q.c;if(Math.sin(q.ph*1.7)>0)px(q.x,q.y,2,1);else px(q.x,q.y,1,2)}ctx.fillStyle='#000'}
+function loop(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;now=t/1000;step(dt);draw();overlay();requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 </script></body></html>
