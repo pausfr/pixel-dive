@@ -51,7 +51,7 @@ function star(x,y){for(let i=0;i<25;i++)if(STAR[i]==='1')px(x+i%5,y+((i/5)|0),1,
 function box(x,y,w,h){px(x,y,w,1);px(x,y+h-1,w,1);px(x,y,1,h);px(x+w-1,y,1,h)}
 
 let mode='menu',d=1,pv=1,pdir=1,gm,tm,ti=0,rt=[],pops=[],parts=[],splT=0,res,now=0,last=0;
-const P=()=>{const f=gm&&mode!=='power'?1-gm.power/100:0;return{spd:(.9+d*.28)*(1+f*.8),pw:(.10-d*.0065)*(1-f*.45),gw:(.26-d*.017)*(1-f*.45),ps:50+d*18}};
+const P=()=>{const k=d/10,f=gm&&mode!=='power'?(1-gm.power/100)*k:0;return{spd:(.5+d*.32)*(1+f*.8),pw:(.16-d*.0125)*(1-f*.45),gw:(.40-d*.031)*(1-f*.45),ps:40+d*19}};
 
 function startGame(){mode='ready';rt=[];ti=0;pv=1;pdir=1;pops=[];parts=[];gm=null}
 function doJump(){const power=Math.round(pv),h=8+power*.42;gm={power,x:24,y:BY-4,vy:-Math.sqrt(2*G*h),apex:BY-4-h,p:0};mode='jump'}
