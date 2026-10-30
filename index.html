@@ -2,6 +2,7 @@
 <html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Pixel Dive</title>
+<link rel="preload" as="image" href="img/face_closeup.webp">
 <style>
 :root{--bg:#e8e8e8;--fg:#222;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1c1c;--fg:#ccc}}
@@ -255,16 +256,20 @@ function space(){
  if(gm&&(mode==='jump'||mode==='cine')){const py=gm.y-gm.cam,h=Math.min(1,Math.max(0,(TT()-gm.tt)/TT()+.3));
   ctx.fillStyle='#fff';for(const[r,a]of[[26,.06],[19,.09],[12,.12]]){ctx.globalAlpha=A*a*h;ctx.beginPath();ctx.arc(gm.x,py,r,0,6.283);ctx.fill()}ctx.globalAlpha=A}
 }
-const hc=document.getElementById('hc'),hx=hc.getContext('2d'),HW=720,HH=480,HF=new Image();HF.src='faces/face_happy.png';let hOn=0;
+const hc=document.getElementById('hc'),hx=hc.getContext('2d'),HW=720,HH=480,HF=new Image();let hOn=0,HR=0,hTry=0;
+function loadHF(){HF.onload=()=>{(HF.decode?HF.decode():Promise.resolve()).catch(()=>{}).then(()=>{hx.drawImage(HF,0,0,1,1);hx.clearRect(0,0,2,2);HR=1})};
+ HF.onerror=()=>{if(hTry++<3)setTimeout(()=>{HF.src='img/face_closeup.webp?'+hTry},1500*hTry)};HF.decoding='async';HF.src='img/face_closeup.webp'}
+loadHF();
 function hires(){
  if(mode!=='cine'&&flT<=0){if(hOn){hx.clearRect(0,0,HW,HH);hOn=0}return}
  hOn=1;hx.clearRect(0,0,HW,HH);
  if(mode==='cine'){
   const t=cT;hx.fillStyle='rgba(0,0,0,'+Math.min(1,t/.25)+')';hx.fillRect(0,0,HW,HH);
-  if(HF.complete&&HF.naturalWidth){
-   const e=1-(1-Math.min(1,t/.5))**3,h=70+470*e+t*70,w=h*HF.naturalWidth/HF.naturalHeight,sk=t>.05?Math.min(12,(t-.05)*24):0,
+  const IM=HR?HF:FACES[2];
+  if(IM.complete&&IM.naturalWidth){
+   const e=1-(1-Math.min(1,t/.5))**3,h=70+470*e+t*70,w=h*IM.naturalWidth/IM.naturalHeight,sk=t>.05?Math.min(12,(t-.05)*24):0,
     cx=360+(Math.random()-.5)*sk,cy=250+(Math.random()-.5)*sk;
-   hx.save();hx.globalAlpha=Math.min(1,t/.2);hx.imageSmoothingEnabled=true;hx.imageSmoothingQuality='high';hx.drawImage(HF,cx-w/2,cy-h/2,w,h);hx.restore();
+   hx.save();hx.globalAlpha=Math.min(1,t/.2);hx.imageSmoothingEnabled=true;hx.imageSmoothingQuality='high';hx.drawImage(IM,cx-w/2,cy-h/2,w,h);hx.restore();
    hx.globalCompositeOperation='saturation';hx.fillStyle='rgba(128,128,128,.25)';hx.fillRect(0,0,HW,HH);hx.globalCompositeOperation='source-over';hx.fillStyle='rgba(4,6,16,.2)';hx.fillRect(0,0,HW,HH);
    const v=hx.createRadialGradient(360,240,110,360,240,420);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.95)');hx.fillStyle=v;hx.fillRect(0,0,HW,HH);
    const g=sm(Math.min(1,t/.2)),lz=sm(Math.max(0,Math.min(1,(t-.05)/.2)));
